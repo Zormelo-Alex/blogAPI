@@ -10,7 +10,7 @@ export const getUsers = (req, res) => {
         const query = `SELECT * FROM users`
         db.all(query, (err, data)=>{
             if(err) return res.status(500).send("error " + err)
-            if(data.length < 1) return res.status(400).send("user not found")
+            if(data.length < 1) return res.status(400).send("no match")
             return res.status(200).send(data)
         })
     } catch (error) {

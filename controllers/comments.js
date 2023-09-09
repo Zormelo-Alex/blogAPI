@@ -27,11 +27,17 @@ export const addComment = (req, res) => {
         if(!comment || !post || !uid) return res.status(400).send("invalid comment")
 
         const date = new Date()
+        const postCheck = `SELECT * FROM posts WHERE ID = ${post}`
         const query = `INSERT INTO comments(comment, uid, createDate, postId) VALUES(?,?,?,?)`
         
-        db.all(query, [comment, uid, date, post], (err, data)=>{
+        db.all(postCheck, (err, post)=>{
             if(err) return res.status(500).send("error "+ err)
-            res.status(200).send("comment added succesfully")
+            if(post.length < 1) return res.status(400).send("sorry post doesn't exist")
+            
+            db.all(query, [comment, uid, date, post], (err, data)=>{
+                if(err) return res.status(500).send("error "+ err)
+                res.status(200).send("comment added succesfully")
+            })
         })
     } catch (error) {
         return res.status(500).send("sorry something went wrong" + error)
