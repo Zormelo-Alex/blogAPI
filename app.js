@@ -19,6 +19,10 @@ const middleware = (req, res, next) => {
 }
 
 
+app.get("/", middleware, (req, res) => {
+    return res.status(200).send("Blog API service is up and running...")
+  });
+
 app.get("/quote", middleware, (req, res) => {
     try {
       const query = `SELECT * FROM quote`
