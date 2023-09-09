@@ -30,9 +30,9 @@ export const addComment = (req, res) => {
         const postCheck = `SELECT * FROM posts WHERE ID = ${post}`
         const query = `INSERT INTO comments(comment, uid, createDate, postId) VALUES(?,?,?,?)`
         
-        db.all(postCheck, (err, post)=>{
+        db.all(postCheck, (err, dbpost)=>{
             if(err) return res.status(500).send("error "+ err)
-            if(post.length < 1) return res.status(400).send("sorry post doesn't exist")
+            if(dbpost.length < 1) return res.status(400).send("sorry post doesn't exist")
             
             db.all(query, [comment, uid, date, post], (err, data)=>{
                 if(err) return res.status(500).send("error "+ err)
