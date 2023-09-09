@@ -1,21 +1,20 @@
 import express from "express"
-import sqlite  from "sqlite3"
 const app = express()
-import postRoute from "./routes/posts.js"
-import { middleware } from "./helpers/middleware.js"
+import authRoutes from "./routes/auth.js"
+import userRoutes from "./routes/users.js"
+import postRoutes from "./routes/posts.js"
+import commentRoutes from "./routes/comments.js"
+import { middleware } from "./helpers/helpers.js"
 
-export const db = new sqlite.Database("test.db", (err)=>{
-    if(err) return console.log("db failed to connect " + err)
-    console.log("db connected succ****")
-})
-const query = "CREATE TABLE IF NOT EXISTS quote(ID INTEGER PRIMARY KEY, movie, quote, character)"
-db.run(query, (err, data)=>{
-    if(err) return console.log("something went wrong" + err)
-})
 
 
 app.use(express.json())
-app.use("/", postRoute)
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/auth/", authRoutes)
+app.use("/api/users/", userRoutes)
+app.use("/api/posts/", postRoutes)
+app.use("/api/comments/", commentRoutes)
 
 
 
