@@ -46,6 +46,7 @@ export const updateUser = (req, res) => {
         const query = `SELECT * FROM users WHERE ID = ${id}`
         db.all(query, async(err, user)=>{
             if(err) return res.status(500).send("error " + err)
+            if(user.length < 1) return res.status(400).send("user not found")
             user = user[0]
             const authenticate = await comparePassword(password, user.password)
             if(!authenticate) return res.status(400).send("Access denied")
@@ -73,6 +74,7 @@ export const deleteUser = (req, res) => {
         const query = `SELECT * FROM users WHERE ID = ${id}`
         db.all(query, async(err, user)=>{
             if(err) return res.status(500).send("error " + err)
+            if(user.length < 1) return res.status(400).send("user not found")
             user = user[0]
             const authenticate = await comparePassword(password, user.password)
             if(!authenticate) return res.status(400).send("Access denied")
