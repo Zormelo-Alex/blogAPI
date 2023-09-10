@@ -43,21 +43,31 @@ export const updateUser = (req, res) => {
 
         if(!username || !password || !email || !id) return res.status(400).send("Invalid details")
 
-        const query = `SELECT * FROM users WHERE ID = ${id}`
-        db.all(query, async(err, user)=>{
-            if(err) return res.status(500).send("error " + err)
-            if(user.length < 1) return res.status(400).send("user not found")
-            user = user[0]
-            const authenticate = await comparePassword(password, user.password)
-            if(!authenticate) return res.status(400).send("Access denied")
-            DOB ? DOB = DOB : DOB = null
+        const user = req.user.user
 
-            const update = "UPDATE users SET username = ?, email = ?, pictureURL = ?, DOB = ?  WHERE ID = ?"
-            const values = [username, email, pictureURL, DOB]
+        const findQuery = `SELECT * FROM users WHERE ID = "${user.id}"`
 
-            db.all(update, [...values, id], (err, data)=>{
+        db.all(findQuery, (err, dbuser)=>{
+            if(err) return res.status(500).send("error with the db " + err)
+            if (dbuser.length < 1) return res.status(500).send("user not found")
+            dbuser = dbuser[0]
+
+            const query = `SELECT * FROM users WHERE ID = ${id}`
+            db.all(query, async(err, user)=>{
                 if(err) return res.status(500).send("error " + err)
-                return res.status(200).send("user updated successfully")
+                if(user.length < 1) return res.status(400).send("user not found")
+                user = user[0]
+                if(dbuser.ID != user.ID) return res.status(400).send("Access denied!")
+
+                DOB ? DOB = DOB : DOB = null
+
+                const update = "UPDATE users SET username = ?, email = ?, pictureURL = ?, DOB = ?  WHERE ID = ?"
+                const values = [username, email, pictureURL, DOB]
+
+                db.all(update, [...values, id], (err, data)=>{
+                    if(err) return res.status(500).send("error " + err)
+                    return res.status(200).send("user updated successfully")
+                })
             })
         })
     } catch (error) {
@@ -68,22 +78,33 @@ export const updateUser = (req, res) => {
 export const deleteUser = (req, res) => {
     try {
         const id = req.params.id
-        const {password} = req.body
-        if(!password || !id) return res.status(400).send("Invalid details")
+        if(!id) return res.status(400).send("Invalid details")
 
-        const query = `SELECT * FROM users WHERE ID = ${id}`
-        db.all(query, async(err, user)=>{
-            if(err) return res.status(500).send("error " + err)
-            if(user.length < 1) return res.status(400).send("user not found")
-            user = user[0]
-            const authenticate = await comparePassword(password, user.password)
-            if(!authenticate) return res.status(400).send("Access denied")
+        const user = req.user.user
 
-            const update = `DELETE FROM users WHERE ID = ${id}`
+        const findQuery = `SELECT * FROM users WHERE ID = "${user.id}"`
 
-            db.all(update, (err, data)=>{
+        db.all(findQuery, (err, dbuser)=>{
+            if(err) return res.status(500).send("error with the db " + err)
+            console.log(dbuser)
+            if (dbuser.length < 1) return res.status(500).send("user not found")
+            dbuser = dbuser[0]
+
+            const query = `SELECT * FROM users WHERE ID = ${id}`
+            db.all(query, async(err, user)=>{
                 if(err) return res.status(500).send("error " + err)
-                return res.status(200).send("user deleted successfully")
+                console.log(user)
+                if(user.length < 1) return res.status(400).send("user not found")
+                user = user[0]
+
+                if(dbuser.ID != user.ID) return res.status(400).send("Access denied!")
+
+                const deleteQuery = `DELETE FROM users WHERE ID = ${id}`
+
+                db.all(deleteQuery, (err, data)=>{
+                    if(err) return res.status(500).send("error " + err)
+                    return res.status(200).send("user deleted successfully")
+                })
             })
         })
     } catch (error) {

@@ -1,5 +1,5 @@
 import { db } from "../database.js"
-import { comparePassword, hashUserPassword } from "../helpers/helpers.js"
+import { comparePassword, generateAccessToken, hashUserPassword } from "../helpers/helpers.js"
 
 const query = "CREATE TABLE IF NOT EXISTS users(ID INTEGER PRIMARY KEY, username, password, email, pictureURL, createDate, DOB)"
 db.run(query, (err)=>{
@@ -22,7 +22,22 @@ export const signUp = async(req, res) => {
         
             db.all(query, [username, password, email, null, date, null], (err, data)=>{
                 if(err) return res.status(500).send("couldn't create user " + err)
-                return res.status(200).send("user created successfully")
+
+                db.all(getQuery, async (err, user)=>{
+                    if(err) return res.status(500).send("something went wrong getting info " + err)
+                    if(user.length < 1) return res.status(400).send("not foubd")
+        
+                    user = user[0]
+        
+                    let id = user.ID
+                    const token = generateAccessToken({id})
+
+                    return res.status(200).send({
+                        message: "user created successfully",
+                        signup: true,
+                        token: token
+                    })
+                })
             })
         })
 
@@ -45,8 +60,14 @@ export const signIn = (req, res) => {
             user = user[0]
 
             const authenticate = await comparePassword(password, user.password)
-            if(authenticate) return res.status(200).send("found")
-            return res.status(400).send("Wrong password")
+            if(!authenticate) return res.status(400).send("Wrong password")
+            let id = user.ID
+            const token = generateAccessToken({id})
+            return res.status(200).send({
+                message: "user Sign in successful",
+                signin: true,
+                token: token
+            })
         })
 
     } catch (error) {
