@@ -35,7 +35,8 @@ export const signUp = async(req, res) => {
                     return res.status(200).send({
                         message: "user created successfully",
                         signup: true,
-                        token: token
+                        token: token,
+                        user: user
                     })
                 })
             })
@@ -66,7 +67,8 @@ export const signIn = (req, res) => {
             return res.status(200).send({
                 message: "user Sign in successful",
                 signin: true,
-                token: token
+                token: token,
+                user: user
             })
         })
 

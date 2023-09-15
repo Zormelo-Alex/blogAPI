@@ -34,21 +34,21 @@ export const getPosts = (req, res) => {
 export const getPost = (req, res)=>{
     try {
         const postid = req.params.id
-        const query = `SELECT
-        posts.ID,
-        posts.title,
-        posts.content, posts.createDate, posts.userID, posts.pictureURL,
-        GROUP_CONCAT(comments.comment, ',-,') AS comments
-        FROM
-        posts
-        LEFT JOIN
-        comments ON posts.ID = comments.postId
-        WHERE posts.ID = ${postid}
-        `
+        const query = `SELECT p.ID, p.title, p.content, p.createDate, p.userID, p.pictureURL, u.username, u.pictureURL AS profilePicture
+        FROM posts p 
+        JOIN users u ON u.ID = p.userID
+        WHERE p.ID = ${postid}`
+
+        const comments = `SELECT * FROM comments WHERE postId = "${postid}"`
+
+        
         db.all(query, (err, data)=>{
             if(err) return res.status(500).send("error with the db " + err)
             if (!data[0].ID) return res.status(200).send("No match found!!!")
-            return res.status(200).send(data[0])
+            db.all(comments, (err, postComments)=> {
+                if(err) return res.status(500).send("error with the db " + err)
+                return res.status(200).send({post:data[0], postcomments: postComments})
+            })
         })
     } catch (error) {
         return res.status(500).send("something went wrong " + error)
@@ -64,6 +64,7 @@ export const addPost = (req, res) => {
         const user = req.user.user
 
         const findQuery = `SELECT * FROM users WHERE ID = "${user.id}"`
+
 
         db.all(findQuery, (err, dbuser)=>{
             if(err) return res.status(500).send("error with the db " + err)

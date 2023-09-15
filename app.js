@@ -5,11 +5,14 @@ import userRoutes from "./routes/users.js"
 import postRoutes from "./routes/posts.js"
 import commentRoutes from "./routes/comments.js"
 import { middleware } from "./helpers/helpers.js"
+import cors from 'cors'
 
 
 
+app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/uploads', express.static('uploads'))
 
 app.use("/api/auth/", authRoutes)
 app.use("/api/users/", userRoutes)
