@@ -8,22 +8,33 @@ db.run(query, (err)=>{
 
 export const getPosts = (req, res) => {
     try {
-        const query = `SELECT
-        posts.ID,
-        posts.title,
-        posts.content, posts.createDate, posts.userID, posts.pictureURL,
-        GROUP_CONCAT(comments.comment, ',-,') AS comments
-        FROM
-        posts
-        LEFT JOIN
-        comments ON posts.ID = comments.postId
-        GROUP BY
-        posts.ID
-        `
+        const query = `SELECT p.ID, p.title, p.content, p.createDate, p.userID, p.pictureURL, u.username, u.pictureURL AS profilePicture
+        FROM posts p
+        JOIN users u ON u.ID = p.userID`
 
         db.all(query, (err, data) => {
           if (err) return res.status(500).send("error with the db " + err)
           if (data.length < 1) return res.status(200).send("No match found!!!")
+          return res.status(200).send(data)
+        })
+      } catch (error) {
+        return res.status(500).send("something went wrong " + error)
+      }
+}
+
+export const getRecentPosts = (req, res) => {
+    try {
+        const query = `SELECT p.ID, p.title, p.content, p.createDate, p.userID, p.pictureURL, u.username, u.pictureURL AS profilePicture
+        FROM posts p
+        JOIN users u ON u.ID = p.userID
+        ORDER BY p.createDate DESC
+        LIMIT 1;`
+        
+
+        db.all(query, (err, data) => {
+          if (err) return res.status(500).send("error with the db " + err)
+          if (data.length < 1) return res.status(200).send("No match found!!!")
+        //   console.log(data)
           return res.status(200).send(data)
         })
       } catch (error) {
@@ -39,7 +50,10 @@ export const getPost = (req, res)=>{
         JOIN users u ON u.ID = p.userID
         WHERE p.ID = ${postid}`
 
-        const comments = `SELECT * FROM comments WHERE postId = "${postid}"`
+        const comments = `SELECT c.ID, c.comment, c.uid, u.username, u.pictureURL AS profilePicture
+        FROM comments c 
+        JOIN users u ON u.ID = c.uid
+        WHERE postId = "${postid}"`
 
         
         db.all(query, (err, data)=>{

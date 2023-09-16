@@ -1,6 +1,6 @@
 import express from "express"
 const router = express.Router()
-import { addPost, deletePost, getPost, getPosts, updatePost } from "../controllers/posts.js"
+import { addPost, deletePost, getPost, getPosts, getRecentPosts, updatePost } from "../controllers/posts.js"
 import { authenticateToken, middleware } from "../helpers/helpers.js"
 import multer from "multer"
 
@@ -17,8 +17,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 
-router.get("/", middleware, authenticateToken, getPosts)
-router.get("/:id", middleware, authenticateToken, getPost)
+router.get("/", middleware, getPosts)
+router.get("/recents", middleware, getRecentPosts)
+router.get("/:id", middleware, getPost)
 router.post("/create", middleware, authenticateToken, upload.single('image'), addPost)
 router.put("/update/:id", middleware, authenticateToken, upload.single('image'), updatePost)
 router.post("/delete/:id", middleware, authenticateToken, deletePost)
