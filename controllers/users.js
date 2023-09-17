@@ -34,14 +34,16 @@ export const getUser = (req, res) => {
 
 export const updateUser = (req, res) => {
     try {
-        let pictureURL = null
+        let pictureURL
+        let values
+        let update
+
         if(req.file){
             pictureURL = req.file.filename
         }
-        let {username, password, email, DOB} = req.body
-        const id = req.params.id
+        let {username, email, DOB} = req.body
 
-        if(!username || !password || !email || !id) return res.status(400).send("Invalid details")
+        if(!username || !email ) return res.status(400).send("Invalid details")
 
         const user = req.user.user
 
@@ -52,7 +54,7 @@ export const updateUser = (req, res) => {
             if (dbuser.length < 1) return res.status(500).send("user not found")
             dbuser = dbuser[0]
 
-            const query = `SELECT * FROM users WHERE ID = ${id}`
+            const query = `SELECT * FROM users WHERE ID = ${user.id}`
             db.all(query, async(err, user)=>{
                 if(err) return res.status(500).send("error " + err)
                 if(user.length < 1) return res.status(400).send("user not found")
@@ -61,10 +63,17 @@ export const updateUser = (req, res) => {
 
                 DOB ? DOB = DOB : DOB = null
 
-                const update = "UPDATE users SET username = ?, email = ?, pictureURL = ?, DOB = ?  WHERE ID = ?"
-                const values = [username, email, pictureURL, DOB]
+                if(req.file){
+                    update = "UPDATE users SET username = ?, email = ?, pictureURL = ?, DOB = ?  WHERE ID = ?"
+                    values = [username, email, pictureURL, DOB]
+                }else{
+                    update = "UPDATE users SET username = ?, email = ?, DOB = ?  WHERE ID = ?"
+                    values = [username, email, DOB]
+                }
 
-                db.all(update, [...values, id], (err, data)=>{
+                // console.log(values)
+
+                db.all(update, [...values, user.ID], (err, data)=>{
                     if(err) return res.status(500).send("error " + err)
                     return res.status(200).send("user updated successfully")
                 })

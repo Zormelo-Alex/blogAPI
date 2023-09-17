@@ -18,7 +18,7 @@ const upload = multer({ storage: storage })
 
 router.get("/", middleware, authenticateToken, getUsers)
 router.get("/:id", middleware, authenticateToken, getUser)
-router.put("/:id", middleware, authenticateToken, upload.single('image'), updateUser)
+router.put("/update", middleware, authenticateToken, upload.single('image'), updateUser)
 router.post("/delete/:id", middleware, authenticateToken, deleteUser)
 
 export default router
